@@ -23,7 +23,13 @@ Storage:
 RAM:
 
 - 2GB
+  
+## Status
 
+Current project status:
+
+- [A133 Status](Status.md)
+  
 ## Research
 
 Completed:
