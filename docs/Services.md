@@ -152,3 +152,6 @@ Future NAS:
 - Immich storage
 - Media library
 - Docker workloads
+---
+
+Last review: 2026-07
