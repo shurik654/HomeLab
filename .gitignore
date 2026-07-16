@@ -1,0 +1,28 @@
+# Secrets
+.env
+*.key
+*.pem
+*.secret
+
+# VPN
+*.conf
+*.ovpn
+
+# Backups
+*.backup
+*.bak
+*.img
+*.bin
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+
+# Docker local files
+docker-compose.override.yml
