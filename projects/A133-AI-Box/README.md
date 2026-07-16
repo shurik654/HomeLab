@@ -42,3 +42,12 @@ Completed:
   - VPN gateway
   - TV Box
   - IoT platform
+---
+
+## Experiments
+
+Research log:
+
+- [EXP-001 ARM32 execution](experiments/EXP-001-ARM32-execution.md)
+- [EXP-002 AArch64 test](experiments/EXP-002-AArch64-test.md)
+- [EXP-003 Stage0 monitor](experiments/EXP-003-Stage0-monitor.md)
