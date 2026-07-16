@@ -33,7 +33,6 @@ Completed:
 - eGON header analysis
 - ARM32 execution via AW_FEL_EXEC
 - Stage-0 Boot Monitor experiments
-- 
 ## Future
 
 - Linux boot
@@ -49,7 +48,6 @@ Completed:
 Architecture decisions:
 
 - [ADR-002 — A133 Boot Architecture](../../decisions/ADR-002-A133-boot-architecture.md)
-- 
 ## Experiments
 
 Research log:
