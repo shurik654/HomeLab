@@ -33,21 +33,31 @@ Completed:
 - eGON header analysis
 - ARM32 execution via AW_FEL_EXEC
 - Stage-0 Boot Monitor experiments
+  
 ## Future
 
-- Linux boot
-- Custom firmware
-- Device purpose selection:
-  - VPN gateway
-  - TV Box
-  - IoT platform
----
+Planned development:
 
+- Linux boot;
+- custom firmware;
+- device role selection:
+
+  - VPN gateway;
+  - TV Box;
+  - IoT platform.
+
+  ## Architecture
+
+System architecture:
+
+- [A133 Architecture](Architecture.md)
+  
 ## Decisions
 
 Architecture decisions:
 
 - [ADR-002 — A133 Boot Architecture](../../decisions/ADR-002-A133-boot-architecture.md)
+  
 ## Experiments
 
 Research log:
