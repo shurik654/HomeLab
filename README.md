@@ -24,6 +24,7 @@ Main principles:
 - NanoPi R5S — main router
 - OpenWrt
 - Xiaomi BE7000 — Wi-Fi Access Point
+- Beeline IPTV through NanoPi R5S
 
 ## Server
 
@@ -65,6 +66,10 @@ Future:
 
 [Network](docs/Network.md)
 
+## IPTV
+
+[IPTV on NanoPi R5S](docs/IPTV.md)
+
 ## Hardware
 
 [Hardware](docs/Hardware.md)
@@ -92,6 +97,8 @@ Future:
 
 🟢 Documentation foundation
 
+🟢 Beeline IPTV on NanoPi R5S
+
 🟡 Network migration
 
 🟡 Server deployment
@@ -100,8 +107,6 @@ Future:
 
 ⚪ Smart Home
 
-⚪ Mobile App
-
 ---
 
-Last update: 2026-07
+Last update: 2026-08
