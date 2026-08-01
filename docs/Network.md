@@ -1,145 +1,150 @@
 # 🌐 HomeLab 2026 — Network
 
-Version: 1.1
+Version: 2.0  
+Updated: 2026-08-01
 
 ---
 
-# Internet Providers
-
-HomeLab uses two independent ISP connections.
-
-## ISP 1 — MTS
-
-Technology:
-
-- GPON
-
-Equipment:
-
-- ONT C-DATA FD511G-X-APC A1
-
-Features:
-
-- Static IPv4 address
-
-Role:
-
-- Primary Internet connection
-
----
-
-## ISP 2 — Beeline
-
-Features:
-
-- Static IPv4 address
-- IPTV service
-
-Equipment:
-
-- Cisco IPTV receiver
-
-Role:
-
-- Secondary Internet connection
-- IPTV provider
-
----
-
-# Main Router
+# Network Core
 
 ## NanoPi R5S
 
-Operating system:
+Operating system: OpenWrt 24.10.4.
 
-- OpenWrt
-
-Role:
-
-Main network gateway.
-
-Functions:
-
-- Multi-WAN
-- Failover
-- Firewall
-- VPN routing
-- Policy routing
-- QoS
-- DHCP
-- DNS
-- Monitoring
-- Beeline IPTV gateway
+Role: main gateway for LAN, dual WAN, VPN, remote access, IPTV and policy routing.
 
 Physical interfaces:
 
-- `eth0` — MTS / `wan`;
-- `eth1` — Beeline / `wanb`;
+- `eth0` — `wan`;
+- `eth1` — `wanb`;
 - `eth2` — LAN / `br-lan`.
+
+LAN subnet: `192.168.2.0/24`.
+
+## Xiaomi BE7000
+
+Mode: access point and Layer-2 switch.
+
+Routing, PBR and VPN decisions are handled by NanoPi.
+
+---
+
+# Dual WAN
+
+mwan3 manages `wan` and `wanb`.
+
+The Internet VPN must not replace endpoint reachability routes or interfere with remote access tunnels.
+
+---
+
+# WireGuard Interfaces
+
+| Interface | Purpose | Subnet |
+|---|---|---|
+| `wg_ams` | Amsterdam Internet VPN | `10.30.0.0/24` |
+| `wg_transit` | Remote access transit | `10.101.0.0/24` |
+| `wg_home` | Home VPN overlay | `10.100.0.0/24` |
+| `wg_sg` | Deprecated Singapore test | `10.31.0.0/24` |
+
+The target architecture uses one Internet VPN: `wg_ams`.
+
+---
+
+# Routing Policy
+
+## LAN clients
+
+Source: `192.168.2.0/24`.
+
+- local and service networks → dedicated routes;
+- Russian IPv4 prefixes → WAN;
+- other Internet traffic → `wg_ams` through policy `LAN_WORLD`.
+
+## Remote clients
+
+Actual remote-access traffic arrives through `wg_transit`.
+
+Required behavior:
+
+- `10.101.0.0/24` → LAN for local resources;
+- Russian Internet destinations → WAN;
+- remaining Internet destinations → `wg_ams` through policy `TRANSIT_WORLD`;
+- firewall forwarding `transit → vpn_ams` must exist.
+
+## Important rule order
+
+Specific local and service policies must be placed before broad Internet policies.
+
+The old custom rule that sent non-Russian LAN traffic to mark `0x030000` was removed because that mark belongs to `wg_home`, not Amsterdam.
+
+---
+
+# Russian Prefix Loader
+
+Script:
+
+```text
+/usr/share/pbr/pbr.user.ru
+```
+
+Source:
+
+```text
+https://ftp.ripe.net/pub/stats/ripencc/delegated-ripencc-latest
+```
+
+The script loads Russian IPv4 prefixes into the PBR WAN destination set.
+
+Current limitation: it runs when PBR starts or restarts. A separate scheduled updater has not yet been finalized.
+
+The script must not contain a broad `LAN → not RU → wg_home` rule.
+
+---
+
+# Firewall Zones
+
+Required zones and forwarding include:
+
+- `lan → wan`;
+- `lan → vpn_ams`;
+- `transit → lan`;
+- `transit → wan`;
+- `transit → vpn_ams`;
+- relevant `homevpn` forwarding for the Home overlay.
+
+The `vpn_ams` zone uses masquerading and MTU fixing.
 
 ---
 
 # IPTV
 
-Beeline IPTV is handled directly by NanoPi R5S.
+Beeline IPTV remains a separate policy-routing function.
 
-Working design:
+- Cisco receiver: `192.168.2.238`;
+- unicast traffic through `wanb`;
+- multicast proxy from `wanb` to LAN;
+- policy `IPTV_BEELINE` must remain before broad policies.
 
-- Cisco receiver IP: `192.168.2.238`;
-- receiver unicast traffic is routed through `wanb`;
-- multicast is proxied from `wanb` to `lan` by `igmpproxy`;
-- `omcproxy` is disabled;
-- dedicated firewall rules allow IGMP and multicast UDP;
-- PBR policy `IPTV_BEELINE` is placed before `LAN_WORLD`.
-
-Detailed configuration and recovery guide:
-
-[IPTV](IPTV.md)
+See [IPTV](IPTV.md).
 
 ---
 
-# Wireless Network
+# Known Application Limitation
 
-## Xiaomi BE7000
+Country-based IP routing does not guarantee correct behavior for applications that use mixed API, CDN, authentication and QUIC endpoints.
 
-Mode:
+Observed examples include Kinopoisk and Meta Horizon.
 
-Access Point + Layer 2 switch
-
-Routing:
-
-Disabled
-
-All routing functions are handled by NanoPi R5S.
+The planned solution is [HomeLab Smart Routing](Smart_Routing_Project.md), initially in monitor-only mode.
 
 ---
 
-# BE7000 Port Map
+# Change Safety
 
-| Port | Device | Purpose |
-|---|---|---|
-| LAN1 | NanoPi R5S | Main uplink |
-| LAN2 | Gaming PC | HomeLab Server |
-| LAN3 | Cisco IPTV | IPTV |
-| LAN4 | Reserved | LAB / Future devices |
+Before changing PBR, firewall or WireGuard:
 
----
-
-# Network Philosophy
-
-- Router functions are separated from Wi-Fi.
-- NanoPi is the network brain.
-- BE7000 provides wireless connectivity.
-- New devices are tested in LAB first.
-- IPTV is isolated by routing policy rather than an unverified VLAN.
-
----
-
-# Future
-
-Planned:
-
-- VLAN segmentation
-- IPv6
-- IoT isolation
-- Network monitoring
+1. create or verify a backup;
+2. record current targeted configuration;
+3. change one component only;
+4. verify LAN, Russian sites, foreign sites and remote access;
+5. keep a tested rollback command.
